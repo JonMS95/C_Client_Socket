@@ -71,7 +71,7 @@
                 local_path="~/Desktop/scripts/C/C_Arg_Parse"
                 URL="https://github.com/JonMS95/C_Arg_Parse"
             />
-            <C_Server_Socket
+            <C_Client_Socket
                 version_major="1"
                 version_minor="0"
                 version_mode="DEBUG"
