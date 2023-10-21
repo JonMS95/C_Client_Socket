@@ -2,6 +2,7 @@
 /******** Include statements ********/
 /************************************/
 
+#include <unistd.h>
 #include "ClientSocketUse.h"
 #include "ClientSocketFSM.h"
 #include "SeverityLog_api.h"
@@ -98,6 +99,7 @@ int ClientSocketRun(char* server_addr, int server_port)
             {
                 if(SocketStateConnect(socket_desc, server_addr, server_port) < 0)
                 {
+                    sleep(CLIENT_SOCKET_WAIT_RECONNECT_SEC);
                     client_socket_fsm = CREATE_FD;
                 }
                 else

@@ -13,6 +13,8 @@
 /******** Define statements ********/
 /***********************************/
 
+#define CLIENT_SOCKET_WAIT_RECONNECT_SEC    1
+
 #define CLIENT_SOCKET_MSG_CREATION_NOK  "Socket file descriptor creation failed."
 #define CLIENT_SOCKET_MSG_CREATION_OK   "Socket file descriptor created."
 #define CLIENT_SOCKET_MSG_CONNECT_NOK   "Failed to connect to server with IP <%s> and port <%d>."
