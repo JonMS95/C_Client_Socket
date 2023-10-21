@@ -1,31 +1,53 @@
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>     // socket, connect functions.
-#include <arpa/inet.h>      // sockaddr_in, inet_addr
-#include "../../Source_files/ClientSocketUse.h"
+/************************************/
+/******** Include statements ********/
+/************************************/
 
-#define SERVER_ADDR "192.168.1.143"
-#define SERVER_PORT 50000
+#include "SeverityLog_api.h"
+#include "ClientSocket_api.h"
+#include "GetOptions_api.h"
 
-int main()
+/************************************/
+
+/***************************************/
+/********** Define statements **********/
+/***************************************/
+
+// #define SERVER_ADDR_SIZE    16
+#define SERVER_ADDR         "192.168.1.143"
+
+#define PORT_OPT_CHAR       'p'
+#define PORT_OPT_LONG       "Port"
+#define PORT_OPT_DETAIL     "Target server port."
+#define PORT_MIN_VALUE      49152
+#define PORT_MAX_VALUE      65535
+#define PORT_DEFAULT_VALUE  50000
+
+/***************************************/
+
+int main(int argc, char** argv)
 {
-    int socket_desc = CreateSocketDescriptor(AF_INET, SOCK_STREAM, IPPROTO_IP);
+    SetSeverityLogMask(SVRTY_LOG_MASK_ALL);
 
-    if(socket_desc < 0)
+    int server_port;
+
+    SetOptionDefinitionInt( PORT_OPT_CHAR       ,
+                            PORT_OPT_LONG       ,
+                            PORT_OPT_DETAIL     ,
+                            PORT_MIN_VALUE      ,
+                            PORT_MAX_VALUE      ,
+                            PORT_DEFAULT_VALUE  ,
+                            &server_port        );
+
+    int parse_arguments = ParseOptions(argc, argv);
+    if(parse_arguments < 0)
     {
-        printf("ERROR CREATING SOCKET FD.\r\n");
-    }
-    else
-    {
-        printf("SOCKET FD CREATED SUCCESSFULLY.\r\n");
+        LOG_ERR("Arguments parsing failed!");
+        return parse_arguments;
     }
 
-    struct sockaddr_in server_data = PrepareForConnection(AF_INET, SERVER_ADDR, SERVER_PORT);
+    LOG_INF("Arguments successfully parsed!");
 
-    SocketConnect(socket_desc, server_data);
-    SocketWrite(socket_desc);
-    
-    CloseSocket(socket_desc);
+    ClientSocketRun(SERVER_ADDR, server_port);
 
     return 0;
 }
