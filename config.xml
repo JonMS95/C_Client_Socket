@@ -71,6 +71,14 @@
                 local_path="~/Desktop/scripts/C/C_Client_Socket"
                 URL="https://github.com/JonMS95/C_Client_Socket"
             />
+            <SSL
+                local_path="/usr/lib/x86_64-linux-gnu/libssl.so"
+                type="built-in"
+            />
+            <Crypto
+                local_path="/usr/lib/x86_64-linux-gnu/libcrypto.so"
+                type="built-in"
+            />
         </Dependencies>
     </Tests>
 </config>
