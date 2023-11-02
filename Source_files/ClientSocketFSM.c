@@ -3,11 +3,22 @@
 /************************************/
 
 #include <unistd.h>
+#include <openssl/ssl.h>
 #include "ClientSocketUse.h"
+#include "ClientSocketSSL.h"
 #include "ClientSocketFSM.h"
 #include "SeverityLog_api.h"
 
 /************************************/
+
+/***********************************/
+/******** Private variables ********/
+/***********************************/
+
+static SSL_CTX* ctx = NULL;
+static SSL*     ssl = NULL;
+
+/***********************************/
 
 /*************************************/
 /******* Function definitions ********/
@@ -29,6 +40,18 @@ int SocketStateCreate()
     return socket_desc;
 }
 
+int SocketStateSetupSSL(SSL_CTX** ctx)
+{
+    int client_socket_SSL_setup = ClientSocketSSLSetup(ctx);
+
+    if(client_socket_SSL_setup != CLIENT_SOCKET_SETUP_SSL_SUCCESS)
+        LOG_ERR(CLIENT_SOCKET_MSG_SETUP_SSL_NOK);
+    else
+        LOG_INF(CLIENT_SOCKET_MSG_SETUP_SSL_OK);
+
+    return (client_socket_SSL_setup == CLIENT_SOCKET_SETUP_SSL_SUCCESS ? 0 : -1);
+}
+
 int SocketStateConnect(int socket_desc, char* server_addr, int server_port)
 {
     struct sockaddr_in server_data = PrepareForConnection(AF_INET, server_addr, server_port);
@@ -44,6 +67,18 @@ int SocketStateConnect(int socket_desc, char* server_addr, int server_port)
     }
     
     return socket_connect;
+}
+
+int SocketStateSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl)
+{
+    int ssl_handshake = ClientSocketSSLHandshake(server_socket, ctx, ssl);
+
+    if(ssl_handshake != CLIENT_SOCKET_SSL_HANDSHAKE_SUCCESS)
+        LOG_ERR(CLIENT_SOCKET_MSG_SSL_HANDSHAKE_NOK);
+    else
+        LOG_INF(CLIENT_SOCKET_MSG_SSL_HANDSHAKE_OK);
+
+    return (ssl_handshake == CLIENT_SOCKET_SSL_HANDSHAKE_SUCCESS ? 0 : -1);
 }
 
 int SocketStateInteract(int socket_desc)
@@ -72,7 +107,7 @@ int SocketStateClose(int new_socket)
     return close;    
 }
 
-int ClientSocketRun(char* server_addr, int server_port)
+int ClientSocketRun(char* server_addr, int server_port, bool secure)
 {
     CLIENT_SOCKET_FSM client_socket_fsm = CREATE_FD;
     int socket_desc;
@@ -90,8 +125,23 @@ int ClientSocketRun(char* server_addr, int server_port)
                 }
                 else
                 {
-                    client_socket_fsm = CONNECT;
+                    client_socket_fsm = SETUP_SSL;
                 }
+            }
+            break;
+
+            case SETUP_SSL:
+            {
+                if(!secure)
+                {
+                    client_socket_fsm = CONNECT;
+                    continue;
+                }
+
+                if(SocketStateSetupSSL(&ctx) < 0)
+                    client_socket_fsm = CLOSE;
+                else
+                    client_socket_fsm = CONNECT;
             }
             break;
 
@@ -104,8 +154,23 @@ int ClientSocketRun(char* server_addr, int server_port)
                 }
                 else
                 {
-                    client_socket_fsm = INTERACT;
+                    client_socket_fsm = SSL_HANDSHAKE;
                 }
+            }
+            break;
+
+            case SSL_HANDSHAKE:
+            {
+                if(!secure)
+                {
+                    client_socket_fsm = INTERACT;
+                    continue;
+                }
+
+                if(SocketStateSSLHandshake(socket_desc, &ctx, &ssl) >= 0)
+                    client_socket_fsm = INTERACT;
+                else
+                    client_socket_fsm = CONNECT;
             }
             break;
 
