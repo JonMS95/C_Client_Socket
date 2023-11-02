@@ -57,7 +57,7 @@ struct sockaddr_in PrepareForConnection(sa_family_t address_family, char* server
 /// @return 0 if everything went to plan, <0 otherwise.
 int SocketConnect(int socket_desc, struct sockaddr_in server)
 {
-    socklen_t file_desc_len = (socklen_t)sizeof(struct sockaddr_in);
+    // socklen_t file_desc_len = (socklen_t)sizeof(struct sockaddr_in);
     return connect(socket_desc, (struct sockaddr*)&server, sizeof(server));
 }
 
@@ -66,9 +66,29 @@ int SocketConnect(int socket_desc, struct sockaddr_in server)
 void SocketInteract(int new_socket)
 {
     char rx_buffer[RX_BUFFER_SIZE] = {};
+    memset(rx_buffer, 0, sizeof(rx_buffer));
+
     char tx_buffer[TX_BUFFER_SIZE] = "Hello Server! It's a fine day today, \"innit\"?";
-    read(new_socket, rx_buffer, sizeof(rx_buffer));
-    LOG_INF("Read from server: <%s>\r\n", rx_buffer);
+    
+    ssize_t read_from_socket = 1;
+
+    // while(read_from_socket >= 1)
+    // {
+        // if(!secure)
+            read_from_socket = read(new_socket, rx_buffer, sizeof(rx_buffer));
+        // else
+        //     read_from_socket = SSL_read(*ssl, rx_buffer, sizeof(rx_buffer));
+
+        if(read_from_socket > 0)
+        {
+            LOG_INF("Read from server: <%s>\r\n", rx_buffer);
+            memset(rx_buffer, 0, read_from_socket);
+            // continue;
+        }
+
+        // break;
+    // }
+
     write(new_socket, tx_buffer, strlen(tx_buffer));
 }
 
