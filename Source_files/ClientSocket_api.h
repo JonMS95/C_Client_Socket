@@ -5,11 +5,19 @@
 extern "C" {
 #endif
 
+/************************************/
+/******** Include statements ********/
+/************************************/
+
+#include <stdbool.h>
+
+/************************************/
+
 /*************************************/
 /******** Function prototypes ********/
 /*************************************/
 
-int ClientSocketRun(char* server_addr, int server_port);
+int ClientSocketRun(char* server_addr, int server_port, bool secure);
 
 /*************************************/
 
