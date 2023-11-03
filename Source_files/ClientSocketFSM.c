@@ -81,9 +81,9 @@ int SocketStateSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl)
     return (ssl_handshake == CLIENT_SOCKET_SSL_HANDSHAKE_SUCCESS ? 0 : -1);
 }
 
-int SocketStateInteract(int socket_desc)
+int SocketStateInteract(int socket_desc, bool secure, SSL** ssl)
 {
-    SocketInteract(socket_desc);
+    SocketInteract(socket_desc, secure, ssl);
 
     return 0;
 }
@@ -176,7 +176,7 @@ int ClientSocketRun(char* server_addr, int server_port, bool secure)
 
             case INTERACT:
             {
-                SocketInteract(socket_desc);
+                SocketStateInteract(socket_desc, secure, &ssl);
 
                 client_socket_fsm = CLOSE;
             }
