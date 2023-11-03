@@ -1,3 +1,6 @@
+#ifndef SERVER_SOCKET_SSL_H
+#define SERVER_SOCKET_SSL_H
+
 /************************************/
 /******** Include statements ********/
 /************************************/
@@ -25,3 +28,5 @@ int ClientSocketSSLSetup(SSL_CTX** ctx);
 int ClientSocketSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl);
 
 /*************************************/
+
+#endif
