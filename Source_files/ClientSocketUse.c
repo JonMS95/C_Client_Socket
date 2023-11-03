@@ -6,6 +6,7 @@
 #include <arpa/inet.h>      // sockaddr_in, inet_addr
 #include <string.h>
 #include <unistd.h>         // Write socket.
+#include <openssl/ssl.h>
 #include "SeverityLog_api.h" // Severity Log.
 
 /************************************/
@@ -63,21 +64,40 @@ int SocketConnect(int socket_desc, struct sockaddr_in server)
 
 /// @brief Interact with server socket.
 /// @param new_socket previously created client socket descriptor.
-void SocketInteract(int new_socket)
+void SocketInteract(int new_socket, bool secure, SSL** ssl)
 {
     char rx_buffer[RX_BUFFER_SIZE] = {};
     memset(rx_buffer, 0, sizeof(rx_buffer));
 
-    char tx_buffer[TX_BUFFER_SIZE] = "Hello Server! It's a fine day today, \"innit\"?";
+    char tx_buffer[TX_BUFFER_SIZE] = {};
+    memset(tx_buffer, 0, sizeof(tx_buffer));
+    strcpy(tx_buffer, "Hello Server! It's a fine day today, \"innit\"?");
     
-    ssize_t read_from_socket = 1;
+    if(!secure)
+    {
+        LOG_DBG("NOT secure write");
+        write(new_socket, tx_buffer, strlen(tx_buffer));
+    }
+    else
+    {
+        LOG_DBG("YES! SECURE write");
+        SSL_write(*ssl, tx_buffer, sizeof(tx_buffer));
+    }
 
-    // while(read_from_socket >= 1)
+    ssize_t read_from_socket = 0;
+
+    // while(read_from_socket >= 0)
     // {
-        // if(!secure)
+        if(!secure)
+        {
+            LOG_DBG("NOT secure read");
             read_from_socket = read(new_socket, rx_buffer, sizeof(rx_buffer));
-        // else
-        //     read_from_socket = SSL_read(*ssl, rx_buffer, sizeof(rx_buffer));
+        }
+        else
+        {
+            LOG_DBG("YES! SECURE read");
+            read_from_socket = SSL_read(*ssl, rx_buffer, sizeof(rx_buffer));
+        }
 
         if(read_from_socket > 0)
         {
@@ -88,8 +108,6 @@ void SocketInteract(int new_socket)
 
         // break;
     // }
-
-    write(new_socket, tx_buffer, strlen(tx_buffer));
 }
 
 /// @brief Closes the socket.
