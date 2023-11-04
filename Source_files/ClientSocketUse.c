@@ -66,8 +66,24 @@ int SocketConnect(int socket_desc, struct sockaddr_in server)
 /// @param new_socket previously created client socket descriptor.
 void SocketInteract(int new_socket, bool secure, SSL** ssl)
 {
-    char rx_buffer[RX_BUFFER_SIZE] = {};
-    memset(rx_buffer, 0, sizeof(rx_buffer));
+    // Make the socket read non-blocking.
+    #include <fcntl.h>
+
+    // Fisrt, try to get socket's current flag set.
+    int flags = fcntl(new_socket, F_GETFL, 0);
+    if(flags < 0)
+    {
+        LOG_ERR("ERROR WHILE GETTING SOCKET FLAGS.");
+        return -1;
+    }
+
+    // Then, set the O_NONBLOCK flag (which, as the name suggests, makes the socket non-blocking).
+    flags |= O_NONBLOCK;
+    if(fcntl(new_socket, F_SETFL, flags) < 0)
+    {
+        LOG_ERR("ERROR WHILE setting O_NONBLOCK flag.");
+        return -1;
+    }
 
     char tx_buffer[TX_BUFFER_SIZE] = {};
     memset(tx_buffer, 0, sizeof(tx_buffer));
@@ -84,10 +100,13 @@ void SocketInteract(int new_socket, bool secure, SSL** ssl)
         SSL_write(*ssl, tx_buffer, sizeof(tx_buffer));
     }
 
+    char rx_buffer[RX_BUFFER_SIZE] = {};
+    memset(rx_buffer, 0, sizeof(rx_buffer));
+
     ssize_t read_from_socket = 0;
 
-    // while(read_from_socket >= 0)
-    // {
+    while(read_from_socket > 0)
+    {
         if(!secure)
         {
             LOG_DBG("NOT secure read");
@@ -99,15 +118,18 @@ void SocketInteract(int new_socket, bool secure, SSL** ssl)
             read_from_socket = SSL_read(*ssl, rx_buffer, sizeof(rx_buffer));
         }
 
+        if(read_from_socket <= 0)
+            break;
+
         if(read_from_socket > 0)
         {
             LOG_INF("Read from server: <%s>\r\n", rx_buffer);
             memset(rx_buffer, 0, read_from_socket);
-            // continue;
+            continue;
         }
 
-        // break;
-    // }
+        break;
+    }
 }
 
 /// @brief Closes the socket.
