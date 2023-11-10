@@ -62,7 +62,6 @@ static void ClientSocketGetServerIPv4(int server_socket, char* server_IPv4)
     inet_ntop(AF_INET, &server.sin_addr, server_IPv4, INET_ADDRSTRLEN);
 }
 
-// TO DO: FILL DATA FOR FIELD IN THE DOXYGEN COMMENT.
 /// @brief Reads from server, then sends a response.
 /// @param server_socket Server socket.
 /// @param secure True if TLS security is wanted, false otherwise.
