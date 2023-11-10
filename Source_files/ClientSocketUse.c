@@ -11,15 +11,6 @@
 
 /************************************/
 
-/************************************/
-/******** Include statements ********/
-/************************************/
-
-#define RX_BUFFER_SIZE  256     // RX buffer size.
-#define TX_BUFFER_SIZE  256     // TX buffer size.
-
-/************************************/
-
 /*************************************/
 /******* Function definitions ********/
 /*************************************/
@@ -63,73 +54,12 @@ int SocketConnect(int socket_desc, struct sockaddr_in server)
 }
 
 /// @brief Interact with server socket.
-/// @param new_socket previously created client socket descriptor.
-void SocketInteract(int new_socket, bool secure, SSL** ssl)
+/// @param server_socket previously created client socket descriptor.
+void SocketInteract(int server_socket, bool secure, SSL** ssl)
 {
-    // Make the socket read non-blocking.
-    #include <fcntl.h>
+    #include "ClientSocketDefaultInteract.h"
 
-    // Fisrt, try to get socket's current flag set.
-    int flags = fcntl(new_socket, F_GETFL, 0);
-    if(flags < 0)
-    {
-        LOG_ERR("ERROR WHILE GETTING SOCKET FLAGS.");
-        return -1;
-    }
-
-    // Then, set the O_NONBLOCK flag (which, as the name suggests, makes the socket non-blocking).
-    flags |= O_NONBLOCK;
-    if(fcntl(new_socket, F_SETFL, flags) < 0)
-    {
-        LOG_ERR("ERROR WHILE setting O_NONBLOCK flag.");
-        return -1;
-    }
-
-    char tx_buffer[TX_BUFFER_SIZE] = {};
-    memset(tx_buffer, 0, sizeof(tx_buffer));
-    strcpy(tx_buffer, "Hello Server! It's a fine day today, \"innit\"?");
-    
-    if(!secure)
-    {
-        LOG_DBG("NOT secure write");
-        write(new_socket, tx_buffer, strlen(tx_buffer));
-    }
-    else
-    {
-        LOG_DBG("YES! SECURE write");
-        SSL_write(*ssl, tx_buffer, sizeof(tx_buffer));
-    }
-
-    char rx_buffer[RX_BUFFER_SIZE] = {};
-    memset(rx_buffer, 0, sizeof(rx_buffer));
-
-    ssize_t read_from_socket = 0;
-
-    while(read_from_socket > 0)
-    {
-        if(!secure)
-        {
-            LOG_DBG("NOT secure read");
-            read_from_socket = read(new_socket, rx_buffer, sizeof(rx_buffer));
-        }
-        else
-        {
-            LOG_DBG("YES! SECURE read");
-            read_from_socket = SSL_read(*ssl, rx_buffer, sizeof(rx_buffer));
-        }
-
-        if(read_from_socket <= 0)
-            break;
-
-        if(read_from_socket > 0)
-        {
-            LOG_INF("Read from server: <%s>\r\n", rx_buffer);
-            memset(rx_buffer, 0, read_from_socket);
-            continue;
-        }
-
-        break;
-    }
+    SocketDefaultInteractFn(server_socket, secure, ssl);
 }
 
 /// @brief Closes the socket.
