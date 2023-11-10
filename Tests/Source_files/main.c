@@ -36,6 +36,7 @@
 int main(int argc, char** argv)
 {
     SetSeverityLogMask(SVRTY_LOG_MASK_ALL);
+    SetSeverityLogPrintTimeStatus(true);
 
     int server_port;
     bool secure_connection;
