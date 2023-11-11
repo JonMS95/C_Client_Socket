@@ -47,7 +47,6 @@ struct sockaddr_in PrepareForConnection(sa_family_t address_family, char* server
 /// @return 0 if everything went to plan, <0 otherwise.
 int SocketConnect(int socket_desc, struct sockaddr_in server)
 {
-    // socklen_t file_desc_len = (socklen_t)sizeof(struct sockaddr_in);
     return connect(socket_desc, (struct sockaddr*)&server, sizeof(server));
 }
 
