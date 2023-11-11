@@ -10,6 +10,7 @@ extern "C" {
 /************************************/
 
 #include <stdbool.h>
+#include <openssl/ssl.h>
 
 /************************************/
 
@@ -17,7 +18,7 @@ extern "C" {
 /******** Function prototypes ********/
 /*************************************/
 
-int ClientSocketRun(char* server_addr, int server_port, bool secure);
+int ClientSocketRun(char* server_addr, int server_port, bool secure, void (*CustomSocketStateInteract)(int client_socket, bool secure, SSL** ssl));
 
 /*************************************/
 
