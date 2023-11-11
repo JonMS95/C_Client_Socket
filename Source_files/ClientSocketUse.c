@@ -4,9 +4,7 @@
 
 #include <sys/socket.h>     // socket, connect functions.
 #include <arpa/inet.h>      // sockaddr_in, inet_addr
-#include <string.h>
 #include <unistd.h>         // Write socket.
-#include <openssl/ssl.h>
 #include "SeverityLog_api.h" // Severity Log.
 
 /************************************/
@@ -51,15 +49,6 @@ int SocketConnect(int socket_desc, struct sockaddr_in server)
 {
     // socklen_t file_desc_len = (socklen_t)sizeof(struct sockaddr_in);
     return connect(socket_desc, (struct sockaddr*)&server, sizeof(server));
-}
-
-/// @brief Interact with server socket.
-/// @param server_socket previously created client socket descriptor.
-void SocketInteract(int server_socket, bool secure, SSL** ssl)
-{
-    #include "ClientSocketDefaultInteract.h"
-
-    SocketDefaultInteractFn(server_socket, secure, ssl);
 }
 
 /// @brief Closes the socket.
