@@ -32,7 +32,9 @@ static void (*SocketStateInteract)(int server_socket, bool secure, SSL** ssl)  =
 /******* Function definitions ********/
 /*************************************/
 
-int SocketStateCreate()
+/// @brief Create socket descriptor.
+/// @return < 0 if it failed to create the socket.
+int SocketStateCreate(void)
 {
     int socket_desc = CreateSocketDescriptor(AF_INET, SOCK_STREAM, IPPROTO_IP);
 
@@ -48,6 +50,9 @@ int SocketStateCreate()
     return socket_desc;
 }
 
+/// @brief Setup SSL context.
+/// @param ctx SSL context.
+/// @return 0 if succeeded, < 0 otherwise.
 int SocketStateSetupSSL(SSL_CTX** ctx)
 {
     int client_socket_SSL_setup = ClientSocketSSLSetup(ctx);
@@ -60,6 +65,11 @@ int SocketStateSetupSSL(SSL_CTX** ctx)
     return (client_socket_SSL_setup == CLIENT_SOCKET_SETUP_SSL_SUCCESS ? 0 : -1);
 }
 
+/// @brief Connects to the server sicket with specified address and port.
+/// @param socket_desc Socket file descriptor.
+/// @param server_addr Server IP address.
+/// @param server_port Server port.
+/// @return < 0 if it failed to connect.
 int SocketStateConnect(int socket_desc, char* server_addr, int server_port)
 {
     struct sockaddr_in server_data = PrepareForConnection(AF_INET, server_addr, server_port);
@@ -77,6 +87,11 @@ int SocketStateConnect(int socket_desc, char* server_addr, int server_port)
     return socket_connect;
 }
 
+/// @brief Perform SSL handshake if needed.
+/// @param server_socket Server socket instance.
+/// @param ctx SSL context.
+/// @param ssl SSL data.
+/// @return 0 if handhsake was successfully performed, < 0 otherwise.
 int SocketStateSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl)
 {
     int ssl_handshake = ClientSocketSSLHandshake(server_socket, ctx, ssl);
@@ -108,6 +123,12 @@ int SocketStateClose(int new_socket)
     return close;    
 }
 
+/// @brief Runs client socket.
+/// @param server_addr Target server address
+/// @param server_port Target server port.
+/// @param secure Enable secure communication (TLS).
+/// @param CustomSocketStateInteract Custom function to interact with server once connection is established.
+/// @return 0 always, exit sending failure signal if SIGINT signal handler could not be properly set.
 int ClientSocketRun(char* server_addr, int server_port, bool secure, void (*CustomSocketStateInteract)(int client_socket, bool secure, SSL** ssl))
 {
     CLIENT_SOCKET_FSM client_socket_fsm = CREATE_FD;
@@ -201,6 +222,8 @@ int ClientSocketRun(char* server_addr, int server_port, bool secure, void (*Cust
             break;
         }
     }
+
+    return 0;
 }
 
 /************************************/
