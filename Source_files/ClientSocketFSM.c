@@ -2,8 +2,10 @@
 /******** Include statements ********/
 /************************************/
 
-#include <unistd.h>
+#include <unistd.h>         // Sleep
+#include <signal.h>         // Shutdown signal.
 #include <openssl/ssl.h>
+#include <openssl/err.h>
 #include "ClientSocketUse.h"
 #include "ClientSocketSSL.h"
 #include "ClientSocketFSM.h"
@@ -16,8 +18,10 @@
 /******** Private variables ********/
 /***********************************/
 
-static SSL_CTX* ctx = NULL;
-static SSL*     ssl = NULL;
+static volatile int ctrlCPressed    = 0;
+
+static SSL_CTX* ctx                 = NULL;
+static SSL*     ssl                 = NULL;
 
 /// @brief Pointer to a function which is meant to interact with the server.
 /// @param server_socket Server socket.
@@ -32,9 +36,46 @@ static void (*SocketStateInteract)(int server_socket, bool secure, SSL** ssl)  =
 /******* Function definitions ********/
 /*************************************/
 
+/// @brief Frees previously heap allocated memory before exiting the program.
+static void SocketFreeResources(void)
+{
+    if(ssl != NULL)
+    {
+        LOG_DBG(CLIENT_SOCKET_MSG_CLEANING_UP_SSL);
+        SSL_free(ssl);
+    }
+
+    if(ctx != NULL)
+    {
+        LOG_DBG(CLIENT_SOCKET_MSG_CLEANING_UP_SSL_CTX);
+        SSL_CTX_free(ctx);
+    }
+
+    ERR_free_strings();
+    EVP_cleanup();
+    CRYPTO_cleanup_all_ex_data();
+    ERR_free_strings();
+    CONF_modules_unload(1);
+    CONF_modules_free();
+    EVP_cleanup();
+    CRYPTO_cleanup_all_ex_data();
+}
+
+/// @brief Handle SIGINT signal (Ctrl+C).
+/// @param signum Signal number (SIGINT by default).
+static void SocketSIGINTHandler(int signum)
+{
+    LOG_WNG(CLIENT_SOCKET_MSG_SIGINT_RECEIVED);
+    ctrlCPressed = 1; // Set the flag to indicate Ctrl+C was pressed
+
+    SocketFreeResources();
+
+    exit(EXIT_SUCCESS);
+}
+
 /// @brief Create socket descriptor.
 /// @return < 0 if it failed to create the socket.
-int SocketStateCreate(void)
+static int SocketStateCreate(void)
 {
     int socket_desc = CreateSocketDescriptor(AF_INET, SOCK_STREAM, IPPROTO_IP);
 
@@ -53,7 +94,7 @@ int SocketStateCreate(void)
 /// @brief Setup SSL context.
 /// @param ctx SSL context.
 /// @return 0 if succeeded, < 0 otherwise.
-int SocketStateSetupSSL(SSL_CTX** ctx)
+static int SocketStateSetupSSL(SSL_CTX** ctx)
 {
     int client_socket_SSL_setup = ClientSocketSSLSetup(ctx);
 
@@ -70,7 +111,7 @@ int SocketStateSetupSSL(SSL_CTX** ctx)
 /// @param server_addr Server IP address.
 /// @param server_port Server port.
 /// @return < 0 if it failed to connect.
-int SocketStateConnect(int socket_desc, char* server_addr, int server_port)
+static int SocketStateConnect(int socket_desc, char* server_addr, int server_port)
 {
     struct sockaddr_in server_data = PrepareForConnection(AF_INET, server_addr, server_port);
     int socket_connect = SocketConnect(socket_desc, server_data);
@@ -92,7 +133,7 @@ int SocketStateConnect(int socket_desc, char* server_addr, int server_port)
 /// @param ctx SSL context.
 /// @param ssl SSL data.
 /// @return 0 if handhsake was successfully performed, < 0 otherwise.
-int SocketStateSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl)
+static int SocketStateSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl)
 {
     int ssl_handshake = ClientSocketSSLHandshake(server_socket, ctx, ssl);
 
@@ -107,7 +148,7 @@ int SocketStateSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl)
 /// @brief Close socket.
 /// @param new_socket Socket file descriptor.
 /// @return < 0 if it failed to close the socket.
-int SocketStateClose(int new_socket)
+static int SocketStateClose(int new_socket)
 {
     int close = CloseSocket(new_socket);
     
@@ -136,6 +177,12 @@ int ClientSocketRun(char* server_addr, int server_port, bool secure, void (*Cust
 
     if(CustomSocketStateInteract != NULL)
         SocketStateInteract = CustomSocketStateInteract;
+
+    if(signal(SIGINT, SocketSIGINTHandler) == SIG_ERR)
+    {
+        LOG_ERR(CLIENT_SOCKET_SET_SIGINT_ERR);
+        exit(EXIT_FAILURE);
+    }
 
     while(1)
     {
