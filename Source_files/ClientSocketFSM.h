@@ -5,8 +5,6 @@
 /******** Include statements ********/
 /************************************/
 
-#include <stdbool.h>
-#include <openssl/ssl.h>
 #include "ClientSocket_api.h"
 
 /************************************/
@@ -53,7 +51,6 @@ typedef enum
 
 int SocketStateCreate(void);
 int SocketStateConnect(int socket_desc, char* server_addr, int server_port);
-int SocketStateInteract(int socket_desc, bool secure, SSL** ssl);
 int SocketStateClose(int new_socket);
 
 /*************************************/
