@@ -7,6 +7,7 @@
 #include "ClientSocketUse.h"
 #include "ClientSocketSSL.h"
 #include "ClientSocketFSM.h"
+#include "ClientSocketDefaultInteract.h"
 #include "SeverityLog_api.h"
 
 /************************************/
@@ -17,6 +18,13 @@
 
 static SSL_CTX* ctx = NULL;
 static SSL*     ssl = NULL;
+
+/// @brief Pointer to a function which is meant to interact with the server.
+/// @param server_socket Server socket.
+/// @param secure True if TLS security is wanted, false otherwise.
+/// @param ssl SSL data.
+/// @return < 0 if any error happened, 0 otherwise.
+static void (*SocketStateInteract)(int server_socket, bool secure, SSL** ssl)  = &SocketDefaultInteractFn;
 
 /***********************************/
 
@@ -81,13 +89,6 @@ int SocketStateSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl)
     return (ssl_handshake == CLIENT_SOCKET_SSL_HANDSHAKE_SUCCESS ? 0 : -1);
 }
 
-int SocketStateInteract(int socket_desc, bool secure, SSL** ssl)
-{
-    SocketInteract(socket_desc, secure, ssl);
-
-    return 0;
-}
-
 /// @brief Close socket.
 /// @param new_socket Socket file descriptor.
 /// @return < 0 if it failed to close the socket.
@@ -107,10 +108,13 @@ int SocketStateClose(int new_socket)
     return close;    
 }
 
-int ClientSocketRun(char* server_addr, int server_port, bool secure)
+int ClientSocketRun(char* server_addr, int server_port, bool secure, void (*CustomSocketStateInteract)(int client_socket, bool secure, SSL** ssl))
 {
     CLIENT_SOCKET_FSM client_socket_fsm = CREATE_FD;
     int socket_desc;
+
+    if(CustomSocketStateInteract != NULL)
+        SocketStateInteract = CustomSocketStateInteract;
 
     while(1)
     {
