@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
     LOG_INF("Arguments successfully parsed!");
 
-    ClientSocketRun(SERVER_ADDR, server_port, secure_connection);
+    ClientSocketRun(SERVER_ADDR, server_port, secure_connection, NULL);
 
     return 0;
 }
