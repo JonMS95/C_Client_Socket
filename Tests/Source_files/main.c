@@ -66,7 +66,7 @@ int main(int argc, char** argv)
                                 ADDR_OPT_LONG     ,
                                 ADDR_OPT_DETAIL   ,
                                 ADDR_DEFAULT_VALUE,
-                                &server_addr);
+                                server_addr);
 
     int parse_arguments = ParseOptions(argc, argv);
     if(parse_arguments < 0)
