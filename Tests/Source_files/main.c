@@ -12,8 +12,14 @@
 /********** Define statements **********/
 /***************************************/
 
-// #define SERVER_ADDR_SIZE    16
-#define SERVER_ADDR         "192.168.1.143"
+/************ Addr settings ************/
+
+#define SERVER_ADDR_SIZE    16
+
+#define ADDR_OPT_CHAR       'a'
+#define ADDR_OPT_LONG       "Address"
+#define ADDR_OPT_DETAIL     "Target server address."
+#define ADDR_DEFAULT_VALUE  "192.168.1.148"
 
 /************ Port settings ************/
 
@@ -40,6 +46,7 @@ int main(int argc, char** argv)
 
     int server_port;
     bool secure_connection;
+    char* server_addr = calloc(SERVER_ADDR_SIZE + 1, 1);
 
     SetOptionDefinitionBool(SECURE_CONN_CHAR            ,
                             SECURE_CONN_LONG            ,
@@ -55,6 +62,12 @@ int main(int argc, char** argv)
                             PORT_DEFAULT_VALUE  ,
                             &server_port        );
 
+    SetOptionDefinitionStringNL(ADDR_OPT_CHAR     ,
+                                ADDR_OPT_LONG     ,
+                                ADDR_OPT_DETAIL   ,
+                                ADDR_DEFAULT_VALUE,
+                                &server_addr);
+
     int parse_arguments = ParseOptions(argc, argv);
     if(parse_arguments < 0)
     {
@@ -64,7 +77,7 @@ int main(int argc, char** argv)
 
     LOG_INF("Arguments successfully parsed!");
 
-    ClientSocketRun(SERVER_ADDR, server_port, secure_connection, NULL);
+    ClientSocketRun(server_addr, server_port, secure_connection, NULL);
 
     return 0;
 }
