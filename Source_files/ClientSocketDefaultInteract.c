@@ -92,7 +92,7 @@ void SocketDefaultInteractFn(int server_socket, bool secure, SSL** ssl)
     ssize_t read_from_socket = 0;
     bool something_read = false;
 
-    while(true)
+    while( (read_from_socket >= 0) || (something_read == false) )
     {
         if(!secure)
             read_from_socket = read(server_socket, rx_buffer, sizeof(rx_buffer));
@@ -117,6 +117,11 @@ void SocketDefaultInteractFn(int server_socket, bool secure, SSL** ssl)
 
         something_read = true;
         LOG_INF(CLIENT_SOCKET_MSG_DATA_READ_FROM_SERVER, rx_buffer);
+        
+        // Clean the buffer after reading.
         memset(rx_buffer, 0, read_from_socket);
+
+        // Wait for a millisecond before trying to read again.
+        usleep(1000);
     }
 }
