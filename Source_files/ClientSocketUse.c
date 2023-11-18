@@ -4,18 +4,8 @@
 
 #include <sys/socket.h>     // socket, connect functions.
 #include <arpa/inet.h>      // sockaddr_in, inet_addr
-#include <string.h>
 #include <unistd.h>         // Write socket.
 #include "SeverityLog_api.h" // Severity Log.
-
-/************************************/
-
-/************************************/
-/******** Include statements ********/
-/************************************/
-
-#define RX_BUFFER_SIZE  256     // RX buffer size.
-#define TX_BUFFER_SIZE  256     // TX buffer size.
 
 /************************************/
 
@@ -57,19 +47,7 @@ struct sockaddr_in PrepareForConnection(sa_family_t address_family, char* server
 /// @return 0 if everything went to plan, <0 otherwise.
 int SocketConnect(int socket_desc, struct sockaddr_in server)
 {
-    socklen_t file_desc_len = (socklen_t)sizeof(struct sockaddr_in);
     return connect(socket_desc, (struct sockaddr*)&server, sizeof(server));
-}
-
-/// @brief Interact with server socket.
-/// @param new_socket previously created client socket descriptor.
-void SocketInteract(int new_socket)
-{
-    char rx_buffer[RX_BUFFER_SIZE] = {};
-    char tx_buffer[TX_BUFFER_SIZE] = "Hello Server! It's a fine day today, \"innit\"?";
-    read(new_socket, rx_buffer, sizeof(rx_buffer));
-    LOG_INF("Read from server: <%s>\r\n", rx_buffer);
-    write(new_socket, tx_buffer, strlen(tx_buffer));
 }
 
 /// @brief Closes the socket.
