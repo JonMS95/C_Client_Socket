@@ -9,6 +9,8 @@ extern "C" {
 /******** Include statements ********/
 /************************************/
 
+#define C_CLIENT_SOCKET_API __attribute__((visibility("default")))
+
 #include <stdbool.h>
 #include <openssl/ssl.h>
 
@@ -24,7 +26,7 @@ extern "C" {
 /// @param secure Enable secure communication (TLS).
 /// @param CustomSocketStateInteract Custom function to interact with server once connection is established.
 /// @return 0 always, exit sending failure signal if SIGINT signal handler could not be properly set.
-int ClientSocketRun(char* server_addr, int server_port, bool secure, void (*CustomSocketStateInteract)(int client_socket, bool secure, SSL** ssl));
+C_CLIENT_SOCKET_API int ClientSocketRun(char* server_addr, int server_port, bool secure, void (*CustomSocketStateInteract)(int client_socket, bool secure, SSL** ssl));
 
 /*************************************/
 
