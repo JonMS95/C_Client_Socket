@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DEFAULT_USER_PORT=55555
+DEFAULT_SERVER_ADDR="127.0.0.1"
 
 CONFIG_FILE="config.xml"
 
@@ -15,4 +16,4 @@ echo
 echo "*******************************"
 echo "Testing 'main' executable file."
 echo "*******************************"
-./Tests/Executable_files/main -p ${DEFAULT_USER_PORT} -s
+./Tests/Executable_files/main -a ${DEFAULT_SERVER_ADDR} -p ${DEFAULT_USER_PORT}
