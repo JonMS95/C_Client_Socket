@@ -16,4 +16,4 @@ echo
 echo "*******************************"
 echo "Testing 'main' executable file."
 echo "*******************************"
-./Tests/Executable_files/main -a ${DEFAULT_SERVER_ADDR} -p ${DEFAULT_USER_PORT}
+./Tests/Executable_files/main -a ${DEFAULT_SERVER_ADDR} -p ${DEFAULT_USER_PORT} -s
