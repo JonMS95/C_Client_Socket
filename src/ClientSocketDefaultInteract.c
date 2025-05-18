@@ -36,7 +36,7 @@ static int ClientSocketSetNonBlocking(int server_socket)
     int flags = fcntl(server_socket, F_GETFL, 0);
     if(flags < 0)
     {
-        LOG_ERR(CLIENT_SOCKET_MSG_ERR_GET_SOCKET_FLAGS);
+        SVRTY_LOG_ERR(CLIENT_SOCKET_MSG_ERR_GET_SOCKET_FLAGS);
         return flags;
     }
 
@@ -44,7 +44,7 @@ static int ClientSocketSetNonBlocking(int server_socket)
     flags |= O_NONBLOCK;
     if(fcntl(server_socket, F_SETFL, flags) < 0)
     {
-        LOG_ERR(CLIENT_SOCKET_MSG_ERR_SET_SOCKET_FLAGS);
+        SVRTY_LOG_ERR(CLIENT_SOCKET_MSG_ERR_SET_SOCKET_FLAGS);
         return flags;
     }
 
@@ -101,7 +101,7 @@ void SocketDefaultInteractFn(int server_socket, bool secure, SSL** ssl)
 
         if(read_from_socket == 0)
         {
-            LOG_WNG(CLIENT_SOCKET_MSG_SERVER_DISCONNECTED, server_IP_addr);
+            SVRTY_LOG_WNG(CLIENT_SOCKET_MSG_SERVER_DISCONNECTED, server_IP_addr);
             break;
         }
 
@@ -116,7 +116,7 @@ void SocketDefaultInteractFn(int server_socket, bool secure, SSL** ssl)
         }
 
         something_read = true;
-        LOG_INF(CLIENT_SOCKET_MSG_DATA_READ_FROM_SERVER, rx_buffer);
+        SVRTY_LOG_INF(CLIENT_SOCKET_MSG_DATA_READ_FROM_SERVER, rx_buffer);
         
         // Clean the buffer after reading.
         memset(rx_buffer, 0, read_from_socket);

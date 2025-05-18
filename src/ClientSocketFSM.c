@@ -41,13 +41,13 @@ static void SocketFreeResources(void)
 {
     if(ssl != NULL)
     {
-        LOG_DBG(CLIENT_SOCKET_MSG_CLEANING_UP_SSL);
+        SVRTY_LOG_DBG(CLIENT_SOCKET_MSG_CLEANING_UP_SSL);
         SSL_free(ssl);
     }
 
     if(ctx != NULL)
     {
-        LOG_DBG(CLIENT_SOCKET_MSG_CLEANING_UP_SSL_CTX);
+        SVRTY_LOG_DBG(CLIENT_SOCKET_MSG_CLEANING_UP_SSL_CTX);
         SSL_CTX_free(ctx);
     }
 
@@ -65,7 +65,7 @@ static void SocketFreeResources(void)
 /// @param signum Signal number (SIGINT by default).
 static void SocketSIGINTHandler(int signum)
 {
-    LOG_WNG(CLIENT_SOCKET_MSG_SIGINT_RECEIVED);
+    SVRTY_LOG_WNG(CLIENT_SOCKET_MSG_SIGINT_RECEIVED);
     ctrlCPressed = 1; // Set the flag to indicate Ctrl+C was pressed
 
     SocketFreeResources();
@@ -81,11 +81,11 @@ static int SocketStateCreate(void)
 
     if(socket_desc < 0)
     {
-        LOG_ERR(CLIENT_SOCKET_MSG_CREATION_NOK);
+        SVRTY_LOG_ERR(CLIENT_SOCKET_MSG_CREATION_NOK);
     }
     else
     {
-        LOG_INF(CLIENT_SOCKET_MSG_CREATION_OK);
+        SVRTY_LOG_INF(CLIENT_SOCKET_MSG_CREATION_OK);
     }
 
     return socket_desc;
@@ -99,9 +99,9 @@ static int SocketStateSetupSSL(SSL_CTX** ctx)
     int client_socket_SSL_setup = ClientSocketSSLSetup(ctx);
 
     if(client_socket_SSL_setup != CLIENT_SOCKET_SETUP_SSL_SUCCESS)
-        LOG_ERR(CLIENT_SOCKET_MSG_SETUP_SSL_NOK);
+        SVRTY_LOG_ERR(CLIENT_SOCKET_MSG_SETUP_SSL_NOK);
     else
-        LOG_INF(CLIENT_SOCKET_MSG_SETUP_SSL_OK);
+        SVRTY_LOG_INF(CLIENT_SOCKET_MSG_SETUP_SSL_OK);
 
     return (client_socket_SSL_setup == CLIENT_SOCKET_SETUP_SSL_SUCCESS ? 0 : -1);
 }
@@ -118,11 +118,11 @@ static int SocketStateConnect(int socket_desc, char* server_addr, int server_por
 
     if(socket_connect < 0)
     {
-        LOG_ERR(CLIENT_SOCKET_MSG_CONNECT_NOK, server_addr, server_port);
+        SVRTY_LOG_ERR(CLIENT_SOCKET_MSG_CONNECT_NOK, server_addr, server_port);
     }
     else
     {
-        LOG_INF(CLIENT_SOCKET_MSG_CONNECT_OK, server_addr, server_port);
+        SVRTY_LOG_INF(CLIENT_SOCKET_MSG_CONNECT_OK, server_addr, server_port);
     }
     
     return socket_connect;
@@ -138,9 +138,9 @@ static int SocketStateSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl)
     int ssl_handshake = ClientSocketSSLHandshake(server_socket, ctx, ssl);
 
     if(ssl_handshake != CLIENT_SOCKET_SSL_HANDSHAKE_SUCCESS)
-        LOG_ERR(CLIENT_SOCKET_MSG_SSL_HANDSHAKE_NOK);
+        SVRTY_LOG_ERR(CLIENT_SOCKET_MSG_SSL_HANDSHAKE_NOK);
     else
-        LOG_INF(CLIENT_SOCKET_MSG_SSL_HANDSHAKE_OK);
+        SVRTY_LOG_INF(CLIENT_SOCKET_MSG_SSL_HANDSHAKE_OK);
 
     return (ssl_handshake == CLIENT_SOCKET_SSL_HANDSHAKE_SUCCESS ? 0 : -1);
 }
@@ -154,11 +154,11 @@ static int SocketStateClose(int new_socket)
     
     if(close < 0)
     {
-        LOG_ERR(CLIENT_SOCKET_MSG_CLOSE_NOK);
+        SVRTY_LOG_ERR(CLIENT_SOCKET_MSG_CLOSE_NOK);
     }
     else
     {
-        LOG_INF(CLIENT_SOCKET_MSG_CLOSE_OK);
+        SVRTY_LOG_INF(CLIENT_SOCKET_MSG_CLOSE_OK);
     }
 
     return close;    
@@ -180,7 +180,7 @@ int ClientSocketRun(char* server_addr, int server_port, bool secure, void (*Cust
 
     if(signal(SIGINT, SocketSIGINTHandler) == SIG_ERR)
     {
-        LOG_ERR(CLIENT_SOCKET_SET_SIGINT_ERR);
+        SVRTY_LOG_ERR(CLIENT_SOCKET_SET_SIGINT_ERR);
         exit(EXIT_FAILURE);
     }
 

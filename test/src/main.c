@@ -12,6 +12,9 @@
 /********** Define statements **********/
 /***************************************/
 
+#define TEST_LOG_BUFFER_SIZE    10000
+#define TEST_LOG_MASK           0XFF
+
 /************ Addr settings ************/
 
 #define SERVER_ADDR_SIZE    16
@@ -41,8 +44,7 @@
 
 int main(int argc, char** argv)
 {
-    SetSeverityLogMask(SVRTY_LOG_MASK_ALL);
-    SetSeverityLogPrintTimeStatus(true);
+    SeverityLogInitWithMask(TEST_LOG_BUFFER_SIZE, TEST_LOG_MASK);
 
     int server_port;
     bool secure_connection;
@@ -71,11 +73,11 @@ int main(int argc, char** argv)
     int parse_arguments = ParseOptions(argc, argv);
     if(parse_arguments < 0)
     {
-        LOG_ERR("Arguments parsing failed!");
+        SVRTY_LOG_ERR("Arguments parsing failed!");
         return parse_arguments;
     }
 
-    LOG_INF("Arguments successfully parsed!");
+    SVRTY_LOG_INF("Arguments successfully parsed!");
 
     ClientSocketRun(server_addr, server_port, secure_connection, NULL);
 

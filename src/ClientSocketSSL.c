@@ -48,13 +48,13 @@ int ClientSocketSSLHandshake(int server_socket, SSL_CTX** ctx, SSL** ssl)
 
     if(cert != NULL)
     {
-        LOG_INF("Server certificate found:");
+        SVRTY_LOG_INF("Server certificate found:");
         
         line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
-        LOG_INF("Subject: %s", line);
+        SVRTY_LOG_INF("Subject: %s", line);
 
         line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
-        LOG_INF("Issuer: %s", line);
+        SVRTY_LOG_INF("Issuer: %s", line);
     }
 
     return ssl_connect;
